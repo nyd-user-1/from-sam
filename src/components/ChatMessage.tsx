@@ -6,7 +6,7 @@ import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
 import { Check, ChevronLeft, ChevronRight, Copy, ExternalLink, FileText, Info, Loader2, Pencil } from "lucide-react";
 import { parseAnswerBlocks, stripAnswerBlocks } from "@/lib/form-answers";
-import { answersMessage, hasReviewBlock, parseFieldBlock, stripFieldBlock, stripReviewBlock } from "@/lib/form-fields";
+import { answersMessage, hasReviewBlock, parseFieldBlock, stripFieldBlock, stripOpenBlock, stripReviewBlock } from "@/lib/form-fields";
 import {
   askedSections,
   displayValue,
@@ -635,7 +635,7 @@ export function ChatMessage({
   pdf,
 }: ChatMessageProps) {
   // All three blocks are machinery, not conversation.
-  const content = stripReviewBlock(stripFieldBlock(stripAnswerBlocks(rawContent)));
+  const content = stripOpenBlock(stripReviewBlock(stripFieldBlock(stripAnswerBlocks(rawContent))));
   const fields = onFieldSubmit && !isStreaming ? parseFieldBlock(rawContent) : null;
   // While the reply streams, the prose is revealed as it is typed.
   const shown = useTypewriter(content, Boolean(isStreaming));

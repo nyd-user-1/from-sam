@@ -172,6 +172,19 @@ export function stripFieldBlock(text: string): string {
   return text.replace(BLOCK, "").replace(/\n{3,}/g, "\n\n").trimEnd();
 }
 
+/**
+ * A machine block still arriving — its opening fence in, its closing fence
+ * not yet — would otherwise stream into the transcript as raw JSON until it
+ * closed (2026-09-29). Once the complete blocks are stripped, any opening
+ * fence left is an open one: drop it and everything after it, and the
+ * controls appear whole when the block completes.
+ */
+const OPEN_BLOCK = /```livingston-(?:fields|answers|review)[\s\S]*$/;
+
+export function stripOpenBlock(text: string): string {
+  return text.replace(OPEN_BLOCK, "").trimEnd();
+}
+
 /** Split `value|Label` options. */
 export function optionParts(o: string): { value: string; label: string } {
   const i = o.indexOf("|");
