@@ -82,7 +82,10 @@ export function AppLayout() {
       {/* App-shell push panel portal target — see components/AppPanel + hooks/useAppPanel */}
       <div id="app-panel-root" ref={panelRoot} className="flex shrink-0 h-full" />
 
-      <ResearchFeed isOpen={feedOpen} mode={panel ?? "activity"} onClose={() => setPanel(null)} />
+      {/* The panel is the forms rail and nothing else (2026-09-29): the bills
+          and live-feed modes are gone from the toggles, so it never opens as
+          either. */}
+      <ResearchFeed isOpen={feedOpen} mode="forms" onClose={() => setPanel(null)} />
 
       {/* Pinned info button */}
       <button
