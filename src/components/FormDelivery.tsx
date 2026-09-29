@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Download, Mail, Send, Loader2, Check, AlertCircle } from "lucide-react";
 import type { ProgramForm } from "@/lib/programs";
-import { api } from "@/lib/api";
+import { apiFetch } from "@/lib/api";
 
 /**
  * What happens to the finished application.
@@ -47,7 +47,7 @@ export function FormDelivery({
         county,
         confirm: which === "office" ? true : undefined,
       };
-      const r = await fetch(api("/api/send-application"), {
+      const r = await apiFetch("/api/send-application", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),

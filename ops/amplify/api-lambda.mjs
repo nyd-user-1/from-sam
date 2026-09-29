@@ -32,7 +32,7 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream)
     ? {
         "access-control-allow-origin": origin,
         "access-control-allow-methods": "GET,POST,PATCH,DELETE,OPTIONS",
-        "access-control-allow-headers": "content-type",
+        "access-control-allow-headers": "content-type, x-amz-content-sha256",
         "access-control-max-age": "600",
         vary: "origin",
       }

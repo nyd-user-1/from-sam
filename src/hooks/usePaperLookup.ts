@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api";
+import { apiFetch } from "@/lib/api";
 
 export interface PaperData {
   title: string | null;
@@ -33,7 +33,7 @@ export function usePaperLookup(pdfUrl: string | undefined) {
   return useQuery({
     queryKey: ["paper-lookup", doi],
     queryFn: async () => {
-      const res = await fetch(api(`/api/paper?doi=${encodeURIComponent(doi!)}`));
+      const res = await apiFetch(`/api/paper?doi=${encodeURIComponent(doi!)}`);
       if (!res.ok) throw new Error(`paper ${res.status}`);
       return (await res.json()) as PaperData;
     },

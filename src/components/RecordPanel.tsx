@@ -8,7 +8,7 @@ import { ExternalLink, ChevronDown, Loader2, Check } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import type { CorpusRecord } from "@/types/record";
 import { useS2Enrichment } from "@/hooks/useS2Enrichment";
-import { api } from "@/lib/api";
+import { apiFetch } from "@/lib/api";
 
 /* ------------------------------------------------------------------ *
  *  Related preprints — the CITE encoder (api/similar.ts): a document→document
@@ -24,7 +24,7 @@ function RelatedPreprints({ recordKey, onOpen }: { recordKey: string; onOpen?: (
   useEffect(() => {
     let alive = true;
     if (!recordKey) return;
-    fetch(api(`/api/similar?key=${encodeURIComponent(recordKey)}&limit=6`))
+    apiFetch(`/api/similar?key=${encodeURIComponent(recordKey)}&limit=6`)
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
       .then((d) => { if (alive) setRows(d.records ?? []); })
       .catch(() => { if (alive) setFailed(true); });
@@ -78,7 +78,7 @@ export function RecordPanel({ record, onOpenRelated }: { record: CorpusRecord; o
   const handleSaveAbstract = async () => {
     if (!abstractDraft.trim()) return;
     setSaving(true);
-    await fetch(api(`/api/record?id=${record.id}`), {
+    await apiFetch(`/api/record?id=${record.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ abstract: abstractDraft.trim() }),

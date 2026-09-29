@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import type { FeedEvent } from "@/types/feed";
-import { api } from "@/lib/api";
+import { apiFetch } from "@/lib/api";
 
 const MAX_EVENTS = 50;
 const TRENDING_WINDOW_MS = 24 * 60 * 60 * 1000;
@@ -18,7 +18,7 @@ export function useResearchFeed() {
     let alive = true;
     const load = async () => {
       try {
-        const res = await fetch(api("/api/feed"));
+        const res = await apiFetch("/api/feed");
         if (!res.ok) throw new Error(String(res.status));
         const data = (await res.json()) as FeedEvent[];
         if (alive) { setEvents(data.slice(0, MAX_EVENTS)); setIsConnected(true); }

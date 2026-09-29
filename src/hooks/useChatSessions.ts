@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api";
+import { apiFetch } from "@/lib/api";
 
 export interface ChatSessionSummary {
   id: string;
@@ -8,7 +8,7 @@ export interface ChatSessionSummary {
 }
 
 async function fetchSessions(): Promise<ChatSessionSummary[]> {
-  const res = await fetch(api("/api/chat-sessions"));
+  const res = await apiFetch("/api/chat-sessions");
   if (!res.ok) throw new Error(`chat-sessions ${res.status}`);
   return (await res.json()) as ChatSessionSummary[];
 }

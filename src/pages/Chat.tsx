@@ -35,7 +35,7 @@ import { FormProgress } from "@/components/FormProgress";
 import { answersMessage, parseFieldBlock, stripFieldBlock } from "@/lib/form-fields";
 import { EXPAND_QUESTION } from "@/components/ChatFormFields";
 import type { FormNav, FormNavSection } from "@/components/ChatResponseFooter";
-import { api } from "@/lib/api";
+import { apiFetch } from "@/lib/api";
 
 // ChatMessage drags in react-markdown + KaTeX (~200 KB gz). A fresh landing
 // renders zero messages, so that weight loads only once a conversation exists.
@@ -409,7 +409,7 @@ export default function Chat() {
       const d = (e as CustomEvent).detail as { type: EntityType; id: string };
       setEntity(d);
       setEntityDetail(null);
-      fetch(api(`/api/graph?op=node&type=${d.type}&id=${encodeURIComponent(d.id)}`))
+      apiFetch(`/api/graph?op=node&type=${d.type}&id=${encodeURIComponent(d.id)}`)
         .then((r) => r.json())
         .then(setEntityDetail)
         .catch(() => setEntityDetail({ error: true }));

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api";
+import { apiFetch } from "@/lib/api";
 
 /** The two preprint archives. Every Agents/Papers/Subjects page is one of these. */
 export type ArchiveServer = "medrxiv" | "biorxiv";
@@ -20,7 +20,7 @@ export function useArchiveCategories(server: ArchiveServer) {
   return useQuery<ArchiveCategory[]>({
     queryKey: ["archive-categories", server],
     queryFn: async () => {
-      const r = await fetch(api(`/api/dict?type=categories&server=${server}`));
+      const r = await apiFetch(`/api/dict?type=categories&server=${server}`);
       if (!r.ok) throw new Error(`dict ${r.status}`);
       return r.json();
     },
@@ -36,7 +36,7 @@ export function useArchiveCount(server: ArchiveServer) {
   return useQuery<number>({
     queryKey: ["archive-count", server],
     queryFn: async () => {
-      const r = await fetch(api(`/api/records?server=${server}&pageSize=1`));
+      const r = await apiFetch(`/api/records?server=${server}&pageSize=1`);
       if (!r.ok) throw new Error(`records ${r.status}`);
       return (await r.json()).totalCount as number;
     },

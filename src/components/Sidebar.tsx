@@ -13,7 +13,7 @@ import {
 import { useState, useRef, useEffect } from "react";
 import { useChatSessions } from "@/hooks/useChatSessions";
 import { UserMenu } from "@/components/UserMenu";
-import { api } from "@/lib/api";
+import { apiFetch } from "@/lib/api";
 
 /* ------------------------------------------------------------------ */
 /*  Chat session item with hover menu                                  */
@@ -64,13 +64,13 @@ function ChatSessionItem({
       setRenameValue(title);
       return;
     }
-    await fetch(api(`/api/chat-sessions?id=${id}`), { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: trimmed }) });
+    await apiFetch(`/api/chat-sessions?id=${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: trimmed }) });
     setIsRenaming(false);
     onRefresh();
   };
 
   const handleDelete = async () => {
-    await fetch(api(`/api/chat-sessions?id=${id}`), { method: "DELETE" });
+    await apiFetch(`/api/chat-sessions?id=${id}`, { method: "DELETE" });
     onRefresh();
     if (isActive) navigate("/");
   };
