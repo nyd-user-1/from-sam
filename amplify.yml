@@ -1,0 +1,21 @@
+version: 1
+# livingston on Amplify Hosting (2026-09-29), from commit bc75167 — the forms
+# chat: the Official forms rail, cards dragged into the chat, the assistant's
+# questions as inputs in the transcript, progress per form, the filled PDF
+# and the offer to email it. The Vercel functions under api/ (the chat's
+# Bedrock call, the email) do not run here; those are wired in a later step.
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - npm ci --no-audit --no-fund
+    build:
+      commands:
+        - npm run build
+  artifacts:
+    baseDirectory: dist
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
