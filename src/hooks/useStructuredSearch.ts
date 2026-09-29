@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import type { CorpusRecord } from "@/types/record";
+import { api } from "@/lib/api";
 
 export interface StructuredSearchParams {
   categories?: string[];
@@ -14,7 +15,7 @@ async function structuredSearch(
   if (params.categories?.length) q.set("categories", params.categories.join(","));
   if (params.journals?.length) q.set("journals", params.journals.join(","));
   if (params.server) q.set("server", params.server);
-  const res = await fetch(`/api/search?${q}`);
+  const res = await fetch(api(`/api/search?${q}`));
   if (!res.ok) throw new Error(`structured ${res.status}`);
   const data = (await res.json()) as { records: CorpusRecord[] };
   return data.records ?? [];

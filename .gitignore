@@ -44,3 +44,5 @@ supabase/.temp/
 
 # Research scratch — walk captures, PDF teardown, egress scaffold
 .research/
+dist-lambda/
+function.zip

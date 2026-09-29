@@ -7,6 +7,7 @@ import type { MessageSources } from "@/hooks/useChat";
 import { usePaperLookup } from "@/hooks/usePaperLookup";
 import { TextSearch } from "@/components/icons/TextSearch";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { api } from "@/lib/api";
 
 /**
  * Moving between the questions of a form interview — the footer of every
@@ -106,7 +107,7 @@ function RelatedFooter({ sourceKey }: { sourceKey: string }) {
 
   useEffect(() => {
     let cancelled = false;
-    fetch(`/api/similar?key=${encodeURIComponent(sourceKey)}&limit=4`)
+    fetch(api(`/api/similar?key=${encodeURIComponent(sourceKey)}&limit=4`))
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
       .then((d) => {
         if (cancelled) return;
@@ -185,7 +186,7 @@ export function GroundingBadge({
     // The guardrail requires all three parts — source, query, answer.
     if (!content || !keys || !query) return;
     let cancelled = false;
-    fetch("/api/grounding", {
+    fetch(api("/api/grounding"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ answer: content, keys: keys.split(","), query }),

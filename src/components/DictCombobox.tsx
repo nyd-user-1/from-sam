@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { ChevronDown, X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/api";
 
 /**
  * One typeahead over any /api/dict vocabulary. Replaces the NSR-era
@@ -21,7 +22,7 @@ interface DictComboboxProps {
 }
 
 async function fetchDict(type: string, server?: string): Promise<string[]> {
-  const res = await fetch(`/api/dict?type=${type}&limit=20000${server ? `&server=${server}` : ""}`);
+  const res = await fetch(api(`/api/dict?type=${type}&limit=20000${server ? `&server=${server}` : ""}`));
   if (!res.ok) throw new Error(`dict ${type} ${res.status}`);
   const rows = (await res.json()) as { value: string }[];
   return rows.map((r) => r.value).filter(Boolean).sort((a, b) => a.localeCompare(b));

@@ -2,6 +2,7 @@ import { lazy, Suspense, useRef, useState } from "react";
 import { Loader2, Paperclip } from "lucide-react";
 import { ChatInput } from "@/components/ChatInput";
 import type { CorpusRecord } from "@/types/record";
+import { api } from "@/lib/api";
 
 const ChatMessage = lazy(() => import("./ChatMessage").then((m) => ({ default: m.ChatMessage })));
 
@@ -44,7 +45,7 @@ export function PanelChat({ record }: { record: CorpusRecord }) {
     const ctrl = new AbortController();
     abortRef.current = ctrl;
     try {
-      const res = await fetch("/api/chat", {
+      const res = await fetch(api("/api/chat"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: history, userMessage: text, modelId, systemContext: describeRecord(record) }),

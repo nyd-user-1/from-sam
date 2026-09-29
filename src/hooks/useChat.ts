@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef } from "react";
 import { useChatPersistence } from "./useChatPersistence";
 import type { PersistedMessage } from "@/types/chat";
+import { api } from "@/lib/api";
 
 export interface MessageSources {
   nsr: Array<{
@@ -112,7 +113,7 @@ export function useChat(room?: ChatRoom | null) {
           ]);
 
           // Fire-and-forget feed event
-          fetch("/api/feed", {
+          fetch(api("/api/feed"), {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ event_type: "chat_started", category: "chat", display_text: `Started chat: "${title}"`, metadata: { session_id: sessionId } }),

@@ -1,5 +1,6 @@
 import { useCallback, useRef } from "react";
 import type { FeedEmitPayload } from "@/types/feed";
+import { api } from "@/lib/api";
 
 const RATE_LIMIT_MS = 30_000;
 
@@ -12,7 +13,7 @@ export function useFeedEmitter() {
     if (now - (lastEmitRef.current[key] ?? 0) < RATE_LIMIT_MS) return;
     lastEmitRef.current[key] = now;
 
-    fetch("/api/feed", {
+    fetch(api("/api/feed"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

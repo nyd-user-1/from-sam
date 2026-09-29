@@ -845,6 +845,7 @@ export function buildFormInterview(f: ProgramForm): string {
     "- Ask two or three plain questions at a time. Never paste a section wholesale, never use the form's bureaucratic wording when ordinary words will do.",
     "- Head the first question of a section `**Section 17 — Employment.**` Any further question in the same section is headed `**Section 17, continued.**` Never repeat the full heading, and never say \"of 21\". An unnumbered part is headed by its title alone: `**Voter registration.**`",
     "- Accept \"I don't know\" and \"skip\". Record it as unanswered and move on. Nothing here is final and nothing is submitted without them saying so.",
+    "- No sympathy lines and no reassurance: never \"I hear you\", never \"this will help the district\", never a comment on how hard things sound. The recap line and the next question are the whole acknowledgment.",
     "- Never invent an answer. Never guess a Social Security number, a dollar figure, or a date.",
     "- Never ask again for something already said earlier in the conversation or listed under RECORDED SO FAR.",
     "- After each section, one short line starting `**Section 17:**` (the number, a colon) that says what you have, e.g. `**Section 11:** You file taxes and claim Aiden and Ailish as dependents.` Not \"recorded\".",

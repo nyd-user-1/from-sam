@@ -1,5 +1,6 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import type { CorpusRecord } from "@/types/record";
+import { api } from "@/lib/api";
 
 /** Small first page so the panel paints immediately; the rest arrives on scroll. */
 export const PAPERS_PAGE = 12;
@@ -8,7 +9,7 @@ export const PAPERS_PAGE = 12;
 const SERVER = "medrxiv";
 
 async function fetchPage(page: number): Promise<CorpusRecord[]> {
-  const res = await fetch(`/api/records?page=${page}&pageSize=${PAPERS_PAGE}&server=${SERVER}`);
+  const res = await fetch(api(`/api/records?page=${page}&pageSize=${PAPERS_PAGE}&server=${SERVER}`));
   if (!res.ok) throw new Error(`records ${res.status}`);
   const data = await res.json();
   return (data.records ?? []) as CorpusRecord[];

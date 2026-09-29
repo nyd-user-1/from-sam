@@ -5,6 +5,7 @@
  */
 
 import { buildFormInterview, formById } from "@/lib/programs";
+import { api } from "@/lib/api";
 
 export const ENTITY_MIME = "application/x-corpus-entity";
 
@@ -54,7 +55,7 @@ FORM ${g.label}`;
   }
   if (g.type === "paper") {
     try {
-      const d = await fetch(`/api/graph?op=node&type=paper&id=${encodeURIComponent(g.id)}`).then((r) => r.json());
+      const d = await fetch(api(`/api/graph?op=node&type=paper&id=${encodeURIComponent(g.id)}`)).then((r) => r.json());
       const n = d.node ?? {};
       return `${head}\nPAPER ${g.id}: "${n.title ?? g.title ?? ""}" (${n.pub_year ?? ""})${n.authors ? `\nAuthors: ${String(n.authors).slice(0, 300)}` : ""}${n.reference ? `\nReference: ${n.reference}` : ""}${n.abstract ? `\nAbstract: ${String(n.abstract).slice(0, 1200)}` : ""}`;
     } catch {

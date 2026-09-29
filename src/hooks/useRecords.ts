@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import type { CorpusRecord } from "@/types/record";
+import { api } from "@/lib/api";
 
 interface Filters {
   year?: number;
@@ -23,7 +24,7 @@ async function fetchRecords(filters: Filters): Promise<PaginatedResult> {
   if (filters.publishedOnly) params.set("published", "1");
   if (filters.server) params.set("server", filters.server);
   if (filters.category) params.set("category", filters.category);
-  const res = await fetch(`/api/records?${params}`);
+  const res = await fetch(api(`/api/records?${params}`));
   if (!res.ok) throw new Error(`records ${res.status}`);
   const data = (await res.json()) as { records: CorpusRecord[]; totalCount: number };
   return { records: data.records ?? [], totalCount: data.totalCount ?? 0 };

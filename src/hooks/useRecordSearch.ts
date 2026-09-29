@@ -1,5 +1,6 @@
 import { useQuery, type QueryFunctionContext } from "@tanstack/react-query";
 import type { CorpusRecord } from "@/types/record";
+import { api } from "@/lib/api";
 
 /**
  * /search backend: `/api/search` on Neon — bge-m3 kNN over nsr_embeddings
@@ -47,7 +48,7 @@ async function searchNsr(query: string, mode: SearchMode, server?: string, signa
   // Measured after the fix: hybrid returns 43 dense / 46 fts / 11 both.
   const params = new URLSearchParams({ q: query, mode, limit: "100" });
   if (server) params.set("server", server);
-  const res = await fetch(`/api/search?${params}`, { signal });
+  const res = await fetch(api(`/api/search?${params}`), { signal });
   if (!res.ok) {
     let detail = "";
     try {

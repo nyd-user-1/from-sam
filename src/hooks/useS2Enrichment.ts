@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { S2Author } from "@/types/record";
+import { api } from "@/lib/api";
 
 export interface S2Enrichment {
   s2_paper_id: string | null;
@@ -19,7 +20,7 @@ export interface S2Enrichment {
 }
 
 async function fetchRecord(recordId: number): Promise<S2Enrichment> {
-  const res = await fetch(`/api/record?id=${recordId}`);
+  const res = await fetch(api(`/api/record?id=${recordId}`));
   if (!res.ok) throw new Error(`record ${res.status}`);
   return (await res.json()) as S2Enrichment;
 }
