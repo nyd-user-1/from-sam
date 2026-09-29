@@ -41,9 +41,24 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream)
   let status = 200
   const headers = { ...cors }
   let stream = null
+  // The handler must not return before the stream has flushed: a response
+  // ended and returned in the same tick lost its body (and its headers)
+  // on the way out. Every way of ending waits on the stream's own finish.
+  let closing = null
   const begin = () => {
     if (stream) return
     stream = awslambda.HttpResponseStream.from(responseStream, { statusCode: status, headers })
+  }
+  const close = (chunk) => {
+    begin()
+    closing ??= new Promise((resolve) => {
+      // Write, then end: the runtime sends the status and headers on the
+      // first write, so an end() that carries the only chunk can go out
+      // without them. A response with no body still needs one write.
+      stream.write(chunk ?? "")
+      stream.end(resolve)
+    })
+    return closing
   }
 
   const res = {
@@ -66,15 +81,11 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream)
     },
     json(value) {
       headers["content-type"] = "application/json"
-      begin()
-      stream.write(JSON.stringify(value))
-      stream.end()
+      void close(JSON.stringify(value))
       return res
     },
     send(text) {
-      begin()
-      stream.write(String(text))
-      stream.end()
+      void close(String(text))
       return res
     },
     write(chunk) {
@@ -83,17 +94,21 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream)
       return true
     },
     end(chunk) {
-      begin()
-      if (chunk) stream.write(chunk)
-      stream.end()
+      void close(chunk)
       return res
     },
   }
 
-  if (method === "OPTIONS") return res.status(204).end()
+  if (method === "OPTIONS") {
+    res.status(204)
+    return close()
+  }
 
   const route = ROUTES[path]
-  if (!route) return res.status(404).json({ error: "not here" })
+  if (!route) {
+    res.status(404).json({ error: "not here" })
+    return closing
+  }
 
   let raw = event.body ?? ""
   if (event.isBase64Encoded && raw) raw = Buffer.from(raw, "base64").toString("utf8")
@@ -112,5 +127,5 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream)
     if (!stream) res.status(500).json({ error: error instanceof Error ? error.message : String(error) })
     else res.end()
   }
-  if (!stream) res.end()
+  await close()
 })
