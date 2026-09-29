@@ -1,8 +1,8 @@
 import { useCallback, useState } from "react";
 import type { PersistedMessage } from "@/types/chat";
-import { api as apiUrl } from "@/lib/api";
+import { apiFetch } from "@/lib/api";
 
-const api = (path: string, init?: RequestInit) => fetch(apiUrl(`/api/chat-sessions${path}`), { headers: { "Content-Type": "application/json" }, ...init });
+const api = (path: string, init?: RequestInit) => apiFetch(`/api/chat-sessions${path}`, { headers: { "Content-Type": "application/json" }, ...init });
 
 export interface ChatSessionData {
   id: string;

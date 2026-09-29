@@ -293,7 +293,8 @@ export function ChatResponseFooter({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  if (isStreaming) return null;
+  // Nothing to act on until the reply has materialised.
+  if (isStreaming || !content.trim()) return null;
 
   const totalCount = sources
     ? sources.nsr.length + sources.s2.length

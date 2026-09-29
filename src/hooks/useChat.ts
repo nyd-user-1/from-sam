@@ -137,9 +137,11 @@ export function useChat(room?: ChatRoom | null) {
       try {
         abortRef.current = new AbortController();
 
-        const res = await fetch(
-          // Our own API route (Neon retrieval + Bedrock generation) — the
-          // Supabase edge function is retired.
+        const res = await apiFetch(
+          // Our own API route (Neon retrieval + Bedrock generation), through
+          // src/lib/api.ts so it reaches the API's origin with the body hash
+          // its signing needs. A plain relative fetch here came back as the
+          // site's index.html, which read as a blank reply (2026-09-29).
           `/api/chat`,
           {
             method: "POST",
@@ -187,6 +189,10 @@ export function useChat(room?: ChatRoom | null) {
 
               try {
                 const parsed = JSON.parse(data);
+
+                // The function reports a failure after the stream has begun
+                // as an event; it is an error to the reader, not a blank turn.
+                if (parsed.error) throw new Error(String(parsed.error));
 
                 // First data event contains sources metadata
                 if (isFirstDataLine && parsed.sources) {

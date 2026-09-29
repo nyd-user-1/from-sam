@@ -20,6 +20,7 @@ import { loadFormPages, pageExcerpt } from "@/lib/form-pages";
 import { ChatFormFields } from "@/components/ChatFormFields";
 import { FormDelivery } from "@/components/FormDelivery";
 import { ChatResponseFooter, type FormNav } from "./ChatResponseFooter";
+import { useTypewriter } from "@/hooks/useTypewriter";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip } from "@/components/ui/tooltip";
 import type { MessageSources } from "@/hooks/useChat";
@@ -636,6 +637,8 @@ export function ChatMessage({
   // All three blocks are machinery, not conversation.
   const content = stripReviewBlock(stripFieldBlock(stripAnswerBlocks(rawContent)));
   const fields = onFieldSubmit && !isStreaming ? parseFieldBlock(rawContent) : null;
+  // While the reply streams, the prose is revealed as it is typed.
+  const shown = useTypewriter(content, Boolean(isStreaming));
   if (role === "user") {
     return <UserTurn rawContent={rawContent} content={content} timestamp={timestamp} derived={derived} onEdit={onEdit} />;
   }
@@ -756,7 +759,7 @@ export function ChatMessage({
             },
           }}
         >
-          {citeMarkdown(content, form)}
+          {citeMarkdown(shown, form)}
         </ReactMarkdown>
         {review && <ReviewTable form={form!} record={record!} />}
         {fields && onFieldSubmit && (
@@ -772,7 +775,13 @@ export function ChatMessage({
           />
         )}
         {isStreaming && !content && (
-          <span className="inline-block w-1.5 h-4 bg-foreground animate-pulse" />
+          // Thinking: three dots, as solar's panel chat has them, until the
+          // first words arrive.
+          <span className="inline-flex items-center gap-1 py-1" aria-label="Thinking">
+            <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground animate-bounce [animation-delay:0ms]" />
+            <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground animate-bounce [animation-delay:150ms]" />
+            <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground animate-bounce [animation-delay:300ms]" />
+          </span>
         )}
       </div>
       <ChatResponseFooter

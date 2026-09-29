@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { Outlet } from "react-router-dom";
-import { List, Activity, FileText, ClipboardList, Info, X } from "lucide-react";
+import { List, ClipboardList, Info, X } from "lucide-react";
 import { Sidebar } from "@/components/Sidebar";
 import { ResearchFeed, type FeedMode } from "@/components/ResearchFeed";
 import { Tooltip as Hint } from "@/components/ui/tooltip";
@@ -68,26 +68,6 @@ export function AppLayout() {
                 className={`inline-flex items-center justify-center h-10 w-10 rounded-md transition-colors hover:bg-muted ${panel === "forms" ? "bg-muted text-foreground" : "text-foreground"}`}
               >
                 <ClipboardList className="h-5 w-5" />
-              </button>
-            </Hint>
-            <Hint label="Recent bills" side="bottom">
-              <button
-                onClick={() => toggle("papers")}
-                aria-label="Recent bills"
-                aria-pressed={panel === "papers"}
-                className={`inline-flex items-center justify-center h-10 w-10 rounded-md transition-colors hover:bg-muted ${panel === "papers" ? "bg-muted text-foreground" : "text-foreground"}`}
-              >
-                <FileText className="h-5 w-5" />
-              </button>
-            </Hint>
-            <Hint label="Live feed" side="bottom">
-              <button
-                onClick={() => toggle("activity")}
-                aria-label="Live feed"
-                aria-pressed={panel === "activity"}
-                className={`inline-flex items-center justify-center h-10 w-10 rounded-md transition-colors hover:bg-muted ${panel === "activity" ? "bg-muted text-foreground" : "text-foreground"}`}
-              >
-                <Activity className="h-5 w-5" />
               </button>
             </Hint>
           </div>
