@@ -64,7 +64,7 @@ export function FormProgress({
   return (
     <div className="flex flex-col gap-3 px-3 pb-3 pt-2">
       <div className="px-1">
-        <p className="text-sm font-medium text-foreground">{form.title}</p>
+        <p className="text-sm font-medium text-foreground">{form.name}</p>
         <p className="mt-0.5 text-[11px] text-muted-foreground">
           {current}
           {n} answer{n === 1 ? "" : "s"} · {done} of {total} sections done
