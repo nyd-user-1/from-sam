@@ -20,7 +20,6 @@ import {
 } from "@/lib/programs";
 import type { BuiltPdf } from "@/components/ChatMessage";
 import {
-  answerCount,
   emptyAnswers,
   loadAnswers,
   mergeAnswers,
@@ -31,7 +30,7 @@ import {
   stripAnswerBlocks,
   type FormAnswers,
 } from "@/lib/form-answers";
-import { FormProgress } from "@/components/FormProgress";
+import { useFormProgress } from "@/hooks/useFormProgress";
 import { answersMessage, parseFieldBlock, stripFieldBlock } from "@/lib/form-fields";
 import { EXPAND_QUESTION } from "@/components/ChatFormFields";
 import type { FormNav, FormNavSection } from "@/components/ChatResponseFooter";
@@ -339,6 +338,15 @@ export default function Chat() {
     const done = new Set(sections.filter((s) => s.state === "done").map((s) => s.n));
     return { ...p, done: Math.max(p.done, done.size) };
   }, [form, answers, lastQuestion, sections]);
+
+  // The record and its progress live in the rail's progress column, not in
+  // this column (2026-09-29): publish them as they change, and take them down
+  // when the form is let go or the page is left.
+  const { publish } = useFormProgress();
+  useEffect(() => {
+    publish(filling && form && answers ? { form, answers, progress } : null);
+  }, [publish, filling, form, answers, progress]);
+  useEffect(() => () => publish(null), [publish]);
   /** "Section 23 · 1 of 2" — a question's place, for its collapsed row. */
   const placeOf = (q: Question) => {
     if (!q.section) return undefined;
@@ -592,9 +600,6 @@ export default function Chat() {
 
           {/* Input pinned to bottom */}
           <div className="px-2 md:px-4 py-3 md:py-4 shrink-0 bg-background">
-            {filling && answers && answerCount(answers) > 0 && (
-              <FormProgress form={formById(filling.id)} answers={answers} progress={progress} />
-            )}
             {filling && <FormRibbon label={filling.label} title={filling.title} onExit={() => { rememberActiveForm(null, sessionId); setAttached(null); }} />}
             {room && <AgentRibbon room={room} onExit={() => navigate("/new-chat")} />}
             <ChatInput
@@ -611,11 +616,6 @@ export default function Chat() {
       ) : (
         /* Empty state — input vertically centered */
         <div className="flex flex-1 flex-col items-center justify-center px-4 pt-header">
-          {filling && answers && answerCount(answers) > 0 && (
-            <div className="w-full">
-              <FormProgress form={formById(filling.id)} answers={answers} progress={progress} />
-            </div>
-          )}
           {filling && (
             <div className="w-full">
               <FormRibbon label={filling.label} title={filling.title} onExit={() => { rememberActiveForm(null, sessionId); setAttached(null); }} />

@@ -1,1 +1,1 @@
-export { ResearchFeed, type FeedMode } from "./ResearchFeed";
+export { ResearchFeed, type FeedMode, type RailPage } from "./ResearchFeed";

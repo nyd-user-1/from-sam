@@ -1,10 +1,11 @@
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Outlet } from "react-router-dom";
 import { List, ClipboardList, Info, X } from "lucide-react";
 import { Sidebar } from "@/components/Sidebar";
-import { ResearchFeed, type FeedMode } from "@/components/ResearchFeed";
+import { ResearchFeed, type FeedMode, type RailPage } from "@/components/ResearchFeed";
 import { Tooltip as Hint } from "@/components/ui/tooltip";
 import { AppPanelProvider } from "@/hooks/useAppPanel";
+import { FormProgressContext, type FormProgressSpec } from "@/hooks/useFormProgress";
 import { useRecentPapers } from "@/hooks/useRecentPapers";
 
 export function AppLayout() {
@@ -23,7 +24,25 @@ export function AppLayout() {
   const [disclaimerOpen, setDisclaimerOpen] = useState(false);
   const panelRoot = useRef<HTMLDivElement | null>(null);
 
+  // The form being filled, as the chat page publishes it (hooks/useFormProgress).
+  // While there is one, the rail has a second page — its progress — and the
+  // rail turns to that page when the filling begins (2026-09-29). Not on a
+  // phone, where the rail would cover the chat it is reporting on.
+  const [spec, setSpec] = useState<FormProgressSpec | null>(null);
+  const progressCtx = useMemo(() => ({ spec, publish: setSpec }), [spec]);
+  const [page, setPage] = useState<RailPage>("forms");
+  const formId = spec?.form.id;
+  useEffect(() => {
+    if (!formId) {
+      setPage("forms");
+      return;
+    }
+    setPage("progress");
+    if (window.matchMedia("(min-width: 768px)").matches) setPanel("forms");
+  }, [formId]);
+
   return (
+    <FormProgressContext.Provider value={progressCtx}>
     <AppPanelProvider portalRoot={panelRoot}>
     <div className="flex h-dvh bg-background p-0 md:p-4">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
@@ -85,7 +104,7 @@ export function AppLayout() {
       {/* The panel is the forms rail and nothing else (2026-09-29): the bills
           and live-feed modes are gone from the toggles, so it never opens as
           either. */}
-      <ResearchFeed isOpen={feedOpen} mode="forms" onClose={() => setPanel(null)} />
+      <ResearchFeed isOpen={feedOpen} mode="forms" page={page} onPage={setPage} onClose={() => setPanel(null)} />
 
       {/* Pinned info button */}
       <button
@@ -131,5 +150,6 @@ export function AppLayout() {
       )}
     </div>
     </AppPanelProvider>
+    </FormProgressContext.Provider>
   );
 }
