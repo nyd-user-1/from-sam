@@ -2,11 +2,50 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Outlet } from "react-router-dom";
 import { List, ClipboardList, Info, X } from "lucide-react";
 import { Sidebar } from "@/components/Sidebar";
-import { ResearchFeed, type FeedMode, type RailPage } from "@/components/ResearchFeed";
+import { FormsList, FORMS_PANEL } from "@/components/FormsList";
+import { FormPanel } from "@/components/FormPanel";
 import { Tooltip as Hint } from "@/components/ui/tooltip";
-import { AppPanelProvider } from "@/hooks/useAppPanel";
+import { AppPanelProvider, useAppPanel } from "@/hooks/useAppPanel";
 import { FormProgressContext, type FormProgressSpec } from "@/hooks/useFormProgress";
 import { useRecentPapers } from "@/hooks/useRecentPapers";
+
+/** The toolbar's forms button: the app-shell panel with the forms in it, or closed again. */
+function FormsButton() {
+  const { panelId, openPanel, closePanel } = useAppPanel();
+  const on = panelId === FORMS_PANEL;
+  return (
+    <Hint label="Official forms" side="bottom">
+      <button
+        onClick={() => (on ? closePanel() : openPanel({ id: FORMS_PANEL, title: "Official forms", content: <FormsList /> }))}
+        aria-label="Official forms"
+        aria-pressed={on}
+        className={`inline-flex items-center justify-center h-10 w-10 rounded-md transition-colors hover:bg-muted ${on ? "bg-muted text-foreground" : "text-foreground"}`}
+      >
+        <ClipboardList className="h-5 w-5" />
+      </button>
+    </Hint>
+  );
+}
+
+/**
+ * When a filling begins, the panel opens on that form (2026-09-29): its
+ * progress lives there. Not on a phone, where the panel would cover the chat
+ * it is reporting on.
+ */
+function FormPanelOpener({ spec }: { spec: FormProgressSpec | null }) {
+  const { openPanel } = useAppPanel();
+  const form = spec?.form;
+  const formRef = useRef(form);
+  formRef.current = form;
+  const formId = form?.id;
+  useEffect(() => {
+    const f = formRef.current;
+    if (!formId || !f) return;
+    if (!window.matchMedia("(min-width: 768px)").matches) return;
+    openPanel({ id: `form:${f.id}`, title: f.code, content: <FormPanel form={f} /> });
+  }, [formId, openPanel]);
+  return null;
+}
 
 export function AppLayout() {
   // Warm the Papers panel's query as the app mounts, so the first open renders
@@ -14,44 +53,26 @@ export function AppLayout() {
   // edge-cached for an hour behind that.
   useRecentPapers();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  // One panel, two contents: the live feed and the newest papers. Holding the
-  // mode rather than a boolean means the two buttons share the panel instead of
-  // fighting over it — clicking the other one swaps the content, clicking the
-  // same one closes it.
-  const [panel, setPanel] = useState<FeedMode | null>(null);
-  const feedOpen = panel !== null;
-  const toggle = (m: FeedMode) => setPanel((p) => (p === m ? null : m));
   const [disclaimerOpen, setDisclaimerOpen] = useState(false);
   const panelRoot = useRef<HTMLDivElement | null>(null);
 
   // The form being filled, as the chat page publishes it (hooks/useFormProgress).
-  // While there is one, the rail has a second page — its progress — and the
-  // rail turns to that page when the filling begins (2026-09-29). Not on a
-  // phone, where the rail would cover the chat it is reporting on.
+  // The form's panel reads it live.
   const [spec, setSpec] = useState<FormProgressSpec | null>(null);
   const progressCtx = useMemo(() => ({ spec, publish: setSpec }), [spec]);
-  const [page, setPage] = useState<RailPage>("forms");
-  const formId = spec?.form.id;
-  useEffect(() => {
-    if (!formId) {
-      setPage("forms");
-      return;
-    }
-    setPage("progress");
-    if (window.matchMedia("(min-width: 768px)").matches) setPanel("forms");
-  }, [formId]);
 
   return (
     <FormProgressContext.Provider value={progressCtx}>
     <AppPanelProvider portalRoot={panelRoot}>
+    <FormPanelOpener spec={spec} />
     <div className="flex h-dvh bg-background p-0 md:p-4">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       {/* Mobile backdrop */}
-      {(sidebarOpen || feedOpen) && (
+      {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 md:hidden"
-          onClick={() => { setSidebarOpen(false); setPanel(null); }}
+          onClick={() => setSidebarOpen(false)}
         />
       )}
 
@@ -79,16 +100,7 @@ export function AppLayout() {
           <div id="header-search" className="pointer-events-auto flex-1 mx-2" />
 
           <div className="pointer-events-auto flex items-center gap-0.5">
-            <Hint label="Official forms" side="bottom">
-              <button
-                onClick={() => toggle("forms")}
-                aria-label="Official forms"
-                aria-pressed={panel === "forms"}
-                className={`inline-flex items-center justify-center h-10 w-10 rounded-md transition-colors hover:bg-muted ${panel === "forms" ? "bg-muted text-foreground" : "text-foreground"}`}
-              >
-                <ClipboardList className="h-5 w-5" />
-              </button>
-            </Hint>
+            <FormsButton />
           </div>
         </div>
 
@@ -98,13 +110,9 @@ export function AppLayout() {
         </main>
       </div>
 
-      {/* App-shell push panel portal target — see components/AppPanel + hooks/useAppPanel */}
+      {/* App-shell push panel portal target — see components/AppPanel + hooks/useAppPanel.
+          The forms live in it (2026-09-29), and so does the form being filled. */}
       <div id="app-panel-root" ref={panelRoot} className="flex shrink-0 h-full" />
-
-      {/* The panel is the forms rail and nothing else (2026-09-29): the bills
-          and live-feed modes are gone from the toggles, so it never opens as
-          either. */}
-      <ResearchFeed isOpen={feedOpen} mode="forms" page={page} onPage={setPage} onClose={() => setPanel(null)} />
 
       {/* Pinned info button */}
       <button

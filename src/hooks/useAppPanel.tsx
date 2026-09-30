@@ -7,6 +7,8 @@ import { AppPanel } from "@/components/AppPanel";
  * outlives route changes.
  */
 interface PanelSpec {
+  /** Names what is open, for a button that toggles its own content. */
+  id?: string;
   title: React.ReactNode;
   content: React.ReactNode;
   footer?: React.ReactNode;
@@ -17,17 +19,22 @@ interface PanelSpec {
 }
 interface PanelCtx {
   open: boolean;
+  /** The open spec's id, when it gave one. */
+  panelId: string | null;
   openPanel: (spec: PanelSpec) => void;
   closePanel: () => void;
 }
-const Ctx = createContext<PanelCtx>({ open: false, openPanel: () => {}, closePanel: () => {} });
+const Ctx = createContext<PanelCtx>({ open: false, panelId: null, openPanel: () => {}, closePanel: () => {} });
 
 export function AppPanelProvider({ children, portalRoot }: { children: React.ReactNode; portalRoot: React.RefObject<HTMLDivElement | null> }) {
   const [spec, setSpec] = useState<PanelSpec | null>(null);
   const [gen, setGen] = useState(0);
   const openPanel = useCallback((s: PanelSpec) => { setSpec(s); setGen((g) => g + 1); }, []);
   const closePanel = useCallback(() => setSpec(null), []);
-  const value = useMemo(() => ({ open: !!spec, openPanel, closePanel }), [spec, openPanel, closePanel]);
+  const value = useMemo(
+    () => ({ open: !!spec, panelId: spec?.id ?? null, openPanel, closePanel }),
+    [spec, openPanel, closePanel],
+  );
   return (
     <Ctx.Provider value={value}>
       {children}

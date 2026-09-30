@@ -339,13 +339,13 @@ export default function Chat() {
     return { ...p, done: Math.max(p.done, done.size) };
   }, [form, answers, lastQuestion, sections]);
 
-  // The record and its progress live in the rail's progress column, not in
-  // this column (2026-09-29): publish them as they change, and take them down
-  // when the form is let go or the page is left.
+  // The record and its progress live in the form's panel beside the page, not
+  // in this column (2026-09-29): publish them as they change, and take them
+  // down when the form is let go or the page is left.
   const { publish } = useFormProgress();
   useEffect(() => {
-    publish(filling && form && answers ? { form, answers, progress } : null);
-  }, [publish, filling, form, answers, progress]);
+    publish(filling && form && answers ? { form, answers, progress, sections } : null);
+  }, [publish, filling, form, answers, progress, sections]);
   useEffect(() => () => publish(null), [publish]);
   /** "Section 23 · 1 of 2" — a question's place, for its collapsed row. */
   const placeOf = (q: Question) => {

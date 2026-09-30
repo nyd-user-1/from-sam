@@ -5,13 +5,13 @@ import { displayValue, isActionKey, labelFor, type ProgramForm } from "@/lib/pro
 import { FormDelivery } from "@/components/FormDelivery";
 
 /**
- * The progress column: what the form knows so far, in the rail beside the chat.
+ * What the form knows so far, in the form's panel beside the chat.
  *
  * It used to sit folded above the input and open into the transcript's
- * column, which was too much for that space to hold (2026-09-29). Here it has
- * a column of its own: the count is real, the sections tick off as they
- * finish, every answer is on view, and the filled PDF is one click away at any
- * point — half finished is still worth more than a blank form.
+ * column, which was too much for that space to hold (2026-09-29). Here the
+ * count is real, the sections tick off as they finish, every answer is on
+ * view, and the filled PDF is one click away at any point — half finished is
+ * still worth more than a blank form.
  *
  * `progress` comes from the page (formProgress in programs.ts): it counts a
  * section done when the interview has moved past it, not only when the model
@@ -62,10 +62,9 @@ export function FormProgress({
   const entries = Object.entries(answers.values).filter(([k]) => !isActionKey(k));
 
   return (
-    <div className="flex flex-col gap-3 px-3 pb-3 pt-2">
-      <div className="px-1">
-        <p className="text-sm font-medium text-foreground">{form.name}</p>
-        <p className="mt-0.5 text-[11px] text-muted-foreground">
+    <div className="space-y-3">
+      <div>
+        <p className="text-[11px] text-muted-foreground">
           {current}
           {n} answer{n === 1 ? "" : "s"} · {done} of {total} sections done
         </p>
@@ -83,7 +82,7 @@ export function FormProgress({
         {url ? "Rebuild" : "Put it on the form"}
       </button>
 
-      {err && <p className="px-1 text-[11px] text-destructive">{err}</p>}
+      {err && <p className="text-[11px] text-destructive">{err}</p>}
 
       {url && bytes && (
         <FormDelivery
@@ -104,7 +103,7 @@ export function FormProgress({
       {entries.length > 0 && (
         <dl className="border-t border-border">
           {entries.map(([k, v]) => (
-            <div key={k} className="border-b border-border/40 px-1 py-1.5">
+            <div key={k} className="border-b border-border/40 py-1.5">
               <dt className="text-[11px] text-muted-foreground" title={k}>
                 {labelFor(k)}
               </dt>

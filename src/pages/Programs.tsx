@@ -5,7 +5,8 @@ import { SearchInput } from "@/components/SearchInput";
 import { ProgramGridCard } from "@/components/ProgramGridCard";
 import { useAppPanel } from "@/hooks/useAppPanel";
 import { useFeedEmitter } from "@/hooks/useFeedEmitter";
-import { FORMS, fillable, formStats, type ProgramForm } from "@/lib/programs";
+import { FormPanel } from "@/components/FormPanel";
+import { FORMS, fillable, type ProgramForm } from "@/lib/programs";
 
 /**
  * Every programme you can apply for, as a browsable grid.
@@ -27,87 +28,6 @@ const CATEGORIES: { key: ProgramForm["category"] | "all" | "forms"; label: strin
   { key: "money", label: "Cash & credits" },
   { key: "older", label: "Older adults" },
 ];
-
-function ProgramDetail({ program }: { program: ProgramForm }) {
-  const stats = formStats(program);
-  return (
-    <div className="space-y-4 text-sm">
-      <div>
-        <p className="font-medium text-foreground">{program.title}</p>
-        <p className="mt-1 text-xs text-muted-foreground">
-          {program.agency}
-          {program.revision ? ` · rev. ${program.revision}` : ""}
-        </p>
-      </div>
-
-      <p className="text-sm text-foreground">{program.blurb}</p>
-
-      <div className="rounded-md border bg-muted/30 p-3">
-        <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Covers</p>
-        <ul className="mt-1.5 space-y-1">
-          {program.covers.map((c) => (
-            <li key={c} className="text-xs text-foreground">
-              {c}
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {program.pdf ? (
-        <>
-          <p className="text-xs text-muted-foreground">
-            {program.pages} pages. {stats.questionSections} sections ask you something; {stats.readingPages} pages
-            are notices to read, with nothing to fill in.
-          </p>
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Sections</p>
-            <ol className="mt-1.5 space-y-1.5">
-              {program.sections.map((s) => (
-                <li key={s.n} className="text-xs">
-                  <span className="font-medium text-foreground">
-                    {/^\d/.test(s.n) ? `${s.n}. ` : ""}
-                    {s.title}
-                  </span>
-                  <span className="text-muted-foreground">
-                    {" "}
-                    · p.{s.pages.join(", ")}
-                    {s.consent ? " · read only" : ""}
-                  </span>
-                </li>
-              ))}
-            </ol>
-          </div>
-          <a
-            href={program.pdf}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center rounded-md border px-2.5 py-1.5 text-xs text-brand hover:bg-muted"
-          >
-            Open the blank form
-          </a>
-        </>
-      ) : (
-        program.apply && (
-          <div className="rounded-md border bg-muted/30 p-3">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">How to apply</p>
-            <p className="mt-1 text-xs text-foreground">{program.apply.how}</p>
-            {program.apply.phone && <p className="mt-1.5 text-xs font-medium text-foreground">{program.apply.phone}</p>}
-            {program.apply.url && (
-              <a
-                href={program.apply.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-1 block truncate text-xs text-brand hover:underline"
-              >
-                {program.apply.url}
-              </a>
-            )}
-          </div>
-        )
-      )}
-    </div>
-  );
-}
 
 export default function Programs() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -202,7 +122,7 @@ export default function Programs() {
               <ProgramGridCard
                 key={f.id}
                 program={f}
-                onOpen={() => openPanel({ title: f.code, content: <ProgramDetail program={f} /> })}
+                onOpen={() => openPanel({ id: `form:${f.id}`, title: f.code, content: <FormPanel form={f} /> })}
                 onAsk={() => ask(f)}
               />
             ))}
