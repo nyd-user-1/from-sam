@@ -63,6 +63,12 @@ export function stripAnswerBlocks(text: string): string {
 }
 
 export function mergeAnswers(prev: FormAnswers, next: { values: Record<string, string>; done: string[] }): FormAnswers {
+  // Nothing new: hand back the same record. A fresh object for an unchanged
+  // record re-ran every effect that watches it, and on a reload whose last
+  // turn was a bare `#done` block that never settled (2026-09-30).
+  const same =
+    Object.entries(next.values).every(([k, v]) => prev.values[k] === v) && next.done.every((n) => prev.done.includes(n));
+  if (same) return prev;
   return {
     formId: prev.formId,
     values: { ...prev.values, ...next.values },
