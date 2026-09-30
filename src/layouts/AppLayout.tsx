@@ -2,21 +2,24 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Outlet } from "react-router-dom";
 import { List, ClipboardList, Info, X } from "lucide-react";
 import { Sidebar } from "@/components/Sidebar";
-import { FormsList, FORMS_PANEL } from "@/components/FormsList";
-import { FormPanel } from "@/components/FormPanel";
+import { FORMS_PANEL, formsPanelSpec } from "@/components/FormsList";
+import { formPanelSpec } from "@/components/FormPanel";
 import { Tooltip as Hint } from "@/components/ui/tooltip";
 import { AppPanelProvider, useAppPanel } from "@/hooks/useAppPanel";
 import { FormProgressContext, type FormProgressSpec } from "@/hooks/useFormProgress";
 import { useRecentPapers } from "@/hooks/useRecentPapers";
 
-/** The toolbar's forms button: the app-shell panel with the forms in it, or closed again. */
-function FormsButton() {
+/**
+ * The toolbar's forms button. Open: the panel closes. Closed: the panel opens
+ * on the form being filled, or on the forms when nothing is (2026-09-29).
+ */
+function FormsButton({ spec }: { spec: FormProgressSpec | null }) {
   const { panelId, openPanel, closePanel } = useAppPanel();
-  const on = panelId === FORMS_PANEL;
+  const on = panelId === FORMS_PANEL || (panelId?.startsWith("form:") ?? false);
   return (
     <Hint label="Official forms" side="bottom">
       <button
-        onClick={() => (on ? closePanel() : openPanel({ id: FORMS_PANEL, title: "Official forms", content: <FormsList /> }))}
+        onClick={() => (on ? closePanel() : openPanel(spec ? formPanelSpec(spec.form) : formsPanelSpec()))}
         aria-label="Official forms"
         aria-pressed={on}
         className={`inline-flex items-center justify-center h-10 w-10 rounded-md transition-colors hover:bg-muted ${on ? "bg-muted text-foreground" : "text-foreground"}`}
@@ -28,21 +31,27 @@ function FormsButton() {
 }
 
 /**
- * When a filling begins, the panel opens on that form (2026-09-29): its
- * progress lives there. Not on a phone, where the panel would cover the chat
- * it is reporting on.
+ * When a filling begins, the panel opens on that form: its record lives
+ * there. When it ends with the form still showing, the panel goes back to
+ * the forms. Not on a phone, where the panel would cover the chat it is
+ * reporting on.
  */
 function FormPanelOpener({ spec }: { spec: FormProgressSpec | null }) {
-  const { openPanel } = useAppPanel();
+  const { panelId, openPanel } = useAppPanel();
   const form = spec?.form;
   const formRef = useRef(form);
   formRef.current = form;
+  const panelRef = useRef(panelId);
+  panelRef.current = panelId;
   const formId = form?.id;
+  const prev = useRef<string | undefined>(undefined);
   useEffect(() => {
-    const f = formRef.current;
-    if (!formId || !f) return;
+    const was = prev.current;
+    prev.current = formId;
     if (!window.matchMedia("(min-width: 768px)").matches) return;
-    openPanel({ id: `form:${f.id}`, title: f.code, content: <FormPanel form={f} /> });
+    const f = formRef.current;
+    if (formId && f) openPanel(formPanelSpec(f));
+    else if (was && panelRef.current?.startsWith("form:")) openPanel(formsPanelSpec());
   }, [formId, openPanel]);
   return null;
 }
@@ -100,7 +109,7 @@ export function AppLayout() {
           <div id="header-search" className="pointer-events-auto flex-1 mx-2" />
 
           <div className="pointer-events-auto flex items-center gap-0.5">
-            <FormsButton />
+            <FormsButton spec={spec} />
           </div>
         </div>
 

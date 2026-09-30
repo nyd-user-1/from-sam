@@ -1,10 +1,13 @@
 import { useAppPanel } from "@/hooks/useAppPanel";
 import { FormCard } from "@/components/FormCard";
-import { FormPanel } from "@/components/FormPanel";
+import { formPanelSpec } from "@/components/FormPanel";
 import { railForms } from "@/lib/programs";
 
 /** The panel id the forms list opens under, so the toolbar button can tell it apart. */
 export const FORMS_PANEL = "forms";
+
+/** Everything the app-shell panel needs to show the forms; hand it to openPanel. */
+export const formsPanelSpec = () => ({ id: FORMS_PANEL, title: "Official forms", content: <FormsList /> });
 
 /**
  * The official forms, as cards you can pick up — in the app-shell panel
@@ -24,11 +27,7 @@ export function FormsList() {
         Let's fill it in together
       </p>
       {railForms().map((f) => (
-        <FormCard
-          key={f.id}
-          form={f}
-          onOpen={() => openPanel({ id: `form:${f.id}`, title: f.code, content: <FormPanel form={f} /> })}
-        />
+        <FormCard key={f.id} form={f} onOpen={() => openPanel(formPanelSpec(f))} />
       ))}
     </div>
   );

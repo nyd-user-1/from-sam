@@ -9,8 +9,9 @@ import type { FormNavSection } from "@/components/ChatResponseFooter";
  *
  * The record is the chat page's state (saved per session there); the panel
  * that shows it is the app-shell panel beside the page. This is the wire
- * between the two: the page publishes, the panel reads, and the layout in
- * between opens the panel on the form when a filling begins (2026-09-29).
+ * between the two: the page publishes, the panel reads and edits through
+ * `edit`, and the layout in between opens the panel on the form when a
+ * filling begins (2026-09-29).
  */
 export interface FormProgressSpec {
   form: ProgramForm;
@@ -19,6 +20,8 @@ export interface FormProgressSpec {
   progress?: { done: number; total: number; current?: string };
   /** Each asked section and what the interview has done to it. */
   sections?: FormNavSection[];
+  /** Put these values in the record. Nothing is said to the model. */
+  edit?: (values: Record<string, string>) => void;
 }
 
 export interface FormProgressCtx {

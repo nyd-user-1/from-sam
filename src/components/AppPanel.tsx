@@ -95,7 +95,9 @@ function PanelFrame({ resetKey, open, onClose, title, footer, children, defaultE
             <button onClick={onClose} className={iconBtn} aria-label="Close"><X className="h-4 w-4" /></button>
           </div>
           <div className={`flex-1 min-h-0 overflow-y-auto ${bodyClass ?? ""}`}>{children}</div>
-          {footer && <div className="shrink-0 border-t">{footer}</div>}
+          {/* The footer draws its own rule: a footer that renders nothing
+              leaves no stray line behind. */}
+          {footer && <div className="shrink-0">{footer}</div>}
         </div>
       )}
     </div>

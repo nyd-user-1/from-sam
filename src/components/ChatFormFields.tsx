@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { ArrowRight, ChevronRight, Info, Vote } from "lucide-react";
+import { Check, ChevronRight, Info, Vote } from "lucide-react";
+import { toast } from "sonner";
 import { optionParts, type ChatField, type FieldTone } from "@/lib/form-fields";
 import { DateField } from "@/components/ui/date-field";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -29,6 +30,17 @@ const INPUT =
 
 const PRIMARY =
   "inline-flex items-center gap-1.5 rounded-lg bg-foreground px-3 py-1.5 text-[12px] font-medium text-background transition-opacity hover:opacity-85 disabled:opacity-40";
+
+/** "First name", "First name and Last name", "First name, Middle initial and Last name". */
+const listOf = (xs: string[]) => (xs.length <= 1 ? xs.join("") : `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}`);
+
+/**
+ * A name box capitalises itself as it is typed (2026-09-29): "peter" reads
+ * "Peter", "mary-jane" reads "Mary-Jane", "o'brien" reads "O'Brien". Only the
+ * first letter of each word is touched; the rest is as typed.
+ */
+const isName = (f: ChatField) => /(first|middle|last)(name|initial)$|\.name$/i.test(f.key) || /\b(name|initial)\b/i.test(f.label);
+const capWords = (s: string) => s.replace(/(^|[\s\-'])([a-z])/g, (_, p: string, c: string) => p + c.toUpperCase());
 
 const CHIP_ON = "border-foreground bg-foreground text-background";
 const CHIP_OFF = "border-border text-foreground hover:bg-muted";
@@ -154,7 +166,23 @@ export function ChatFormFields({
     onSubmit(changed);
     setOpen(false);
   };
-  const canSend = !disabled && filled.length > 0;
+  // Send waits for the box to be filled in: every required field, or — when
+  // nothing in it is required — at least one. Until then the button is muted,
+  // and a press on it says what is missing rather than doing nothing
+  // (2026-09-29).
+  const required = fields.filter((f) => !f.optional);
+  const missing = required.filter((f) => !(values[f.key] ?? "").trim());
+  const ready = required.length ? missing.length === 0 : filled.length > 0;
+  const canSend = !disabled && ready;
+  const trySend = () => {
+    if (disabled) return;
+    if (ready) return send();
+    toast(
+      required.length
+        ? `Fill in ${listOf(missing.map((f) => f.label))} to send, or answer in the chat box.`
+        : "Fill in at least one to send, or answer in the chat box.",
+    );
+  };
   const canSave = !disabled && dirty;
 
   // Enter in a text-like box sends, once there is something to send. A
@@ -165,8 +193,8 @@ export function ChatFormFields({
     const t = e.target as HTMLElement;
     if (t.tagName !== "INPUT") return;
     e.preventDefault();
-    if (live && canSend) send();
-    else if (!live && canSave) save();
+    if (live) trySend();
+    else if (canSave) save();
   };
 
   const control = (f: ChatField) => {
@@ -302,7 +330,16 @@ export function ChatFormFields({
         autoComplete={f.kind === "ssn" ? "off" : undefined}
         value={v}
         placeholder={f.placeholder}
-        onChange={(e) => set(f.key, f.kind === "ssn" || f.kind === "number" ? e.target.value.replace(/[^\d.\-\s]/g, "") : e.target.value)}
+        onChange={(e) =>
+          set(
+            f.key,
+            f.kind === "ssn" || f.kind === "number"
+              ? e.target.value.replace(/[^\d.\-\s]/g, "")
+              : isName(f)
+                ? capWords(e.target.value)
+                : e.target.value,
+          )
+        }
       />
     );
   };
@@ -363,9 +400,16 @@ export function ChatFormFields({
       <div className="mt-3 rounded-lg border border-border bg-muted/30 p-3">
         {controls}
         <div className="mt-3 flex items-center gap-2">
-          <button type="button" disabled={!canSend} onClick={send} className={PRIMARY}>
-            Send
-            <ArrowRight className="h-3 w-3" />
+          <button
+            type="button"
+            aria-label="Send"
+            aria-disabled={!canSend}
+            onClick={trySend}
+            className={`inline-flex h-7 min-w-[72px] items-center justify-center rounded-lg text-[12px] font-medium transition-colors ${
+              canSend ? "bg-foreground text-background hover:opacity-85" : "bg-muted text-muted-foreground"
+            }`}
+          >
+            <Check className="h-3.5 w-3.5" />
           </button>
           <p className="text-[10px] text-muted-foreground">or just answer in the chat box — whatever is easier.</p>
         </div>

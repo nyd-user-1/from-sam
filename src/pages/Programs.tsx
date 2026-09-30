@@ -5,7 +5,7 @@ import { SearchInput } from "@/components/SearchInput";
 import { ProgramGridCard } from "@/components/ProgramGridCard";
 import { useAppPanel } from "@/hooks/useAppPanel";
 import { useFeedEmitter } from "@/hooks/useFeedEmitter";
-import { FormPanel } from "@/components/FormPanel";
+import { formPanelSpec } from "@/components/FormPanel";
 import { FORMS, fillable, type ProgramForm } from "@/lib/programs";
 
 /**
@@ -122,7 +122,7 @@ export default function Programs() {
               <ProgramGridCard
                 key={f.id}
                 program={f}
-                onOpen={() => openPanel({ id: `form:${f.id}`, title: f.code, content: <FormPanel form={f} /> })}
+                onOpen={() => openPanel(formPanelSpec(f))}
                 onAsk={() => ask(f)}
               />
             ))}

@@ -31,6 +31,8 @@ import {
   type FormAnswers,
 } from "@/lib/form-answers";
 import { useFormProgress } from "@/hooks/useFormProgress";
+import { useAppPanel } from "@/hooks/useAppPanel";
+import { formsPanelSpec } from "@/components/FormsList";
 import { answersMessage, parseFieldBlock, stripFieldBlock } from "@/lib/form-fields";
 import { EXPAND_QUESTION } from "@/components/ChatFormFields";
 import type { FormNav, FormNavSection } from "@/components/ChatResponseFooter";
@@ -344,9 +346,22 @@ export default function Chat() {
   // down when the form is let go or the page is left.
   const { publish } = useFormProgress();
   useEffect(() => {
-    publish(filling && form && answers ? { form, answers, progress, sections } : null);
-  }, [publish, filling, form, answers, progress, sections]);
+    publish(filling && form && answers ? { form, answers, progress, sections, edit: record } : null);
+  }, [publish, filling, form, answers, progress, sections, record]);
   useEffect(() => () => publish(null), [publish]);
+
+  // A chat that is beginning shows the forms in the panel (2026-09-29); one
+  // that is filling a form shows that form instead (AppLayout opens it). Not
+  // on a phone, and not when a form is about to be re-attached below.
+  const { openPanel } = useAppPanel();
+  const attachedRef = useRef(attached);
+  attachedRef.current = attached;
+  useEffect(() => {
+    if (routeSessionId || attachedRef.current) return;
+    if (sessionStorage.getItem("livingston-open-form") || recallActiveForm(null)) return;
+    if (!window.matchMedia("(min-width: 768px)").matches) return;
+    openPanel(formsPanelSpec());
+  }, [routeSessionId, openPanel]);
   /** "Section 23 · 1 of 2" — a question's place, for its collapsed row. */
   const placeOf = (q: Question) => {
     if (!q.section) return undefined;
