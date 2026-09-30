@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
-import { Check, ChevronRight, Info, Vote } from "lucide-react";
+import { Check, ChevronDown, ChevronRight, Info, Vote } from "lucide-react";
 import { toast } from "sonner";
 import { optionParts, type ChatField, type FieldTone } from "@/lib/form-fields";
 import { DateField } from "@/components/ui/date-field";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 /**
  * The assistant's questions, as real controls, inline in the transcript.
@@ -41,6 +42,70 @@ const listOf = (xs: string[]) => (xs.length <= 1 ? xs.join("") : `${xs.slice(0, 
  */
 const isName = (f: ChatField) => /(first|middle|last)(name|initial)$|\.name$/i.test(f.key) || /\b(name|initial)\b/i.test(f.label);
 const capWords = (s: string) => s.replace(/(^|[\s\-'])([a-z])/g, (_, p: string, c: string) => p + c.toUpperCase());
+
+const TRIGGER =
+  "flex w-full items-center justify-between gap-2 rounded-md border border-border bg-background px-2.5 py-1.5 text-left text-[13px] text-foreground outline-none transition-[border-color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/25";
+
+/**
+ * A drop-down that takes more than one answer (2026-09-29): the same box as
+ * the single select, a list of check rows under it that scrolls past a few,
+ * and the choices made read back in the box.
+ */
+function MultiSelect({
+  id,
+  label,
+  value,
+  options,
+  onToggle,
+}: {
+  id?: string;
+  label: string;
+  value: string;
+  options: string[];
+  onToggle: (value: string) => void;
+}) {
+  const chosen = value.split(",").map((s) => s.trim()).filter(Boolean);
+  const shown = options.map(optionParts).filter((o) => chosen.includes(o.value)).map((o) => o.label);
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button type="button" id={id} aria-label={label} className={TRIGGER}>
+          <span className={`min-w-0 flex-1 truncate ${shown.length ? "" : "text-muted-foreground"}`}>
+            {shown.length ? shown.join(", ") : "Choose…"}
+          </span>
+          <ChevronDown className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="start" sideOffset={4} className="w-[var(--radix-popover-trigger-width)] p-1">
+        <div className="max-h-[240px] overflow-y-auto">
+          {options.map((o) => {
+            const { value: v, label: l } = optionParts(o);
+            const on = chosen.includes(v);
+            return (
+              <button
+                key={v}
+                type="button"
+                role="checkbox"
+                aria-checked={on}
+                onClick={() => onToggle(v)}
+                className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-[13px] text-foreground transition-colors hover:bg-muted"
+              >
+                <span
+                  className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-[3px] border ${
+                    on ? "border-foreground bg-foreground text-background" : "border-border bg-background"
+                  }`}
+                >
+                  {on && <Check className="h-2.5 w-2.5" />}
+                </span>
+                <span className="truncate">{l}</span>
+              </button>
+            );
+          })}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 const CHIP_ON = "border-foreground bg-foreground text-background";
 const CHIP_OFF = "border-border text-foreground hover:bg-muted";
@@ -150,7 +215,10 @@ export function ChatFormFields({
   const toggle = (k: string, v: string) =>
     setValues((p) => {
       const cur = (p[k] ?? "").split(",").map((s) => s.trim()).filter(Boolean);
-      const next = cur.includes(v) ? cur.filter((x) => x !== v) : [...cur, v];
+      // "Prefer not to answer" stands alone: picking it clears the rest, and
+      // picking anything else clears it.
+      if (v === "skip") return { ...p, [k]: cur.includes("skip") ? "" : "skip" };
+      const next = (cur.includes(v) ? cur.filter((x) => x !== v) : [...cur, v]).filter((x) => x !== "skip");
       return { ...p, [k]: next.join(", ") };
     });
 
@@ -246,27 +314,7 @@ export function ChatFormFields({
         </div>
       );
 
-    if (f.kind === "checkbox")
-      return (
-        <div className="flex flex-wrap gap-1.5">
-          {opts.map((o) => {
-            const { value, label } = optionParts(o);
-            const on = v.split(",").map((s) => s.trim()).includes(value);
-            return (
-              <button
-                key={value}
-                type="button"
-                role="checkbox"
-                aria-checked={on}
-                onClick={() => toggle(f.key, value)}
-                className={`rounded-full border px-2.5 py-1 text-[12px] transition-colors ${on ? CHIP_ON : CHIP_OFF}`}
-              >
-                {label}
-              </button>
-            );
-          })}
-        </div>
-      );
+    if (f.kind === "checkbox") return <MultiSelect id={id} label={f.label} value={v} options={opts} onToggle={(value) => toggle(f.key, value)} />;
 
     if (f.kind === "date") return <DateField id={id} className={INPUT} value={v} onChange={(iso) => set(f.key, iso)} placeholder={f.placeholder} />;
 
@@ -411,6 +459,18 @@ export function ChatFormFields({
           >
             <Check className="h-3.5 w-3.5" />
           </button>
+          {required.length === 0 && (
+            // Nothing here is required: the question can be skipped, and the
+            // record says so — asked, not given (2026-09-29).
+            <button
+              type="button"
+              disabled={disabled}
+              onClick={() => onSubmit(Object.fromEntries(fields.map((f) => [f.key, "skip"])))}
+              className="inline-flex h-7 items-center justify-center rounded-lg bg-muted px-3 text-[12px] font-medium text-foreground transition-colors hover:bg-muted/70 disabled:opacity-40"
+            >
+              Skip
+            </button>
+          )}
           <p className="text-[10px] text-muted-foreground">or just answer in the chat box — whatever is easier.</p>
         </div>
       </div>

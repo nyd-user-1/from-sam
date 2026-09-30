@@ -68,7 +68,7 @@ const GRANTS: Prompt[] = [
     prompt: "Does the Weatherization Assistance Program cover renters, and what work does it pay for?",
   },
   {
-    title: "What does the Earned Income Tax Credit pay?",
+    title: "What is the Earned Income Tax Credit?",
     description: "Federal, state and city credits",
     prompt: "What does the Earned Income Tax Credit pay, and how do I claim the federal, New York State and city credits?",
   },

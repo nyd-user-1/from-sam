@@ -329,7 +329,13 @@ export default function Chat() {
   const navFor = (id: string): FormNav | undefined => {
     const i = questions.findIndex((q) => q.id === id);
     if (i < 0) return undefined;
-    return { prevId: questions[i - 1]?.id, nextId: questions[i + 1]?.id, sections, onJump: jumpToQuestion };
+    return { prevId: questions[i - 1]?.id, nextId: questions[i + 1]?.id, sections, onJump: jumpToQuestion, onGo: goToSection };
+  };
+  // A section nothing has been asked in yet: the interview is asked to go
+  // there (2026-09-29). The prompt knows to head it, ask it, then come back.
+  const goToSection = (s: FormNavSection) => {
+    if (isLoading) return;
+    void sendMessage(`Let's go to ${s.label} now.`, formContext(), undefined, undefined, "form");
   };
   // Progress that does not lag the interview: the open question's section,
   // and every section before it, count as reached.

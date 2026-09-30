@@ -90,7 +90,7 @@ const LDSS_2921: ProgramForm = {
       "Whether each person buys food or prepares meals with you",
     ] },
     { n: "7", title: "Race and ethnicity", pages: [4], asks: [
-      "Optional, and it does not affect the decision — race and ethnicity for each person",
+      "Optional, and it does not affect the decision — race and ethnicity for each person, one field per person, the choices offered (Prefer not to answer is one of them); never a yes/no first",
     ] },
     { n: "8", title: "Citizenship and immigration status", pages: [5], asks: [
       "Citizenship or immigration status for each person applying",
@@ -404,6 +404,16 @@ export interface FormKey {
 }
 
 const YN = ["yes|Yes", "no|No"];
+/** Section 7's codes, as the form prints them; `skip` is the form's own "voluntary". */
+const RACE = [
+  "H|Hispanic or Latino",
+  "I|Native American or Alaskan Native",
+  "A|Asian",
+  "B|Black or African American",
+  "P|Native Hawaiian or Pacific Islander",
+  "W|White",
+  "skip|Prefer not to answer",
+];
 const SEX = ["M|Male", "F|Female", "X|X"];
 const CITIZENSHIP = ["citizen|U.S. citizen", "qualified non-citizen|Qualified non-citizen", "other|Other"];
 const LANGUAGE = ["english|English", "spanish|Spanish", "other|Another language"];
@@ -505,9 +515,8 @@ export const FORM_KEYS: FormKey[] = [
   { key: "household[n].ssn", label: "SSN", what: "SSN, digits only — only if freely given" },
   { key: "household[n].relationship", label: "Relationship", what: "relationship to the applicant" },
   { key: "household[n].buysFoodTogether", label: "Buys food together", what: "whether they buy food or prepare meals with the applicant", options: YN },
-  { key: "raceEthnicity.provide", label: "Share race and ethnicity", what: "whether they want to answer the optional race and ethnicity question", options: YN },
-  { key: "applicant.race", label: "Race and ethnicity", what: "the applicant's race and ethnicity, in their words — optional" },
-  { key: "household[n].race", label: "Race and ethnicity", what: "that person's race and ethnicity — optional" },
+  { key: "applicant.race", label: "Race and ethnicity", what: "the applicant's race and ethnicity — optional; more than one may apply", options: RACE, multi: true },
+  { key: "household[n].race", label: "Race and ethnicity", what: "that person's race and ethnicity — optional; more than one may apply", options: RACE, multi: true },
   { key: "applicant.citizenship", label: "Citizenship", what: "the applicant's citizenship or immigration status", options: CITIZENSHIP },
   { key: "applicant.citizenshipDetail", label: "Immigration status", what: "the status in their words, when it is `other`" },
   { key: "household[n].citizenship", label: "Citizenship", what: "citizenship or immigration status", options: CITIZENSHIP },
@@ -678,7 +687,6 @@ export const KEY_SECTION: Record<string, string> = {
   "address.": "3",
   "mailing.": "3",
   "household": "6",
-  "raceEthnicity.": "7",
   "applicant.race": "7",
   "household[n].race": "7",
   "applicant.citizenship": "8",
@@ -842,6 +850,7 @@ export function buildFormInterview(f: ProgramForm): string {
     "",
     "HOW TO RUN IT",
     "- Work through the sections in the order listed. Open by saying what the form is, roughly how long it takes, and that they can stop any time and come back.",
+    "- If they ask to go to a section (\"Let's go to Section 15\"), go there: head it and ask its questions. When it is done, pick up where you left off.",
     "- Ask two or three plain questions at a time. Never paste a section wholesale, never use the form's bureaucratic wording when ordinary words will do.",
     "- Head the first question of a section `**Section 17 — Employment.**` Any further question in the same section is headed `**Section 17, continued.**` Never repeat the full heading, and never say \"of 21\". An unnumbered part is headed by its title alone: `**Voter registration.**`",
     "- Accept \"I don't know\" and \"skip\". Record it as unanswered and move on. Nothing here is final and nothing is submitted without them saying so.",

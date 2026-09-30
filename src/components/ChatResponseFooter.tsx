@@ -28,6 +28,8 @@ export interface FormNav {
   nextId?: string;
   sections: FormNavSection[];
   onJump: (id: string) => void;
+  /** A section nothing has been asked in yet: ask the interview to go there. */
+  onGo?: (section: FormNavSection) => void;
 }
 
 const ICON =
@@ -45,17 +47,22 @@ function FormNavButtons({ nav }: { nav: FormNav }) {
         </PopoverTrigger>
         <PopoverContent align="start" sideOffset={6} className="w-64 p-1">
           <p className="px-2 pb-1 pt-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Sections</p>
+          {/* Scrolls past a few, like the + menu: the list never outruns the
+              window (2026-09-29). Every section is a way in — one already
+              asked reopens its question, one not yet asked sends the
+              interview there. */}
+          <div className="max-h-[320px] overflow-y-auto">
           {nav.sections.map((s) => {
-            const clickable = s.state !== "none" && Boolean(s.firstId);
+            const clickable = Boolean(s.firstId) || Boolean(nav.onGo);
             return (
               <button
                 key={s.n}
                 type="button"
                 disabled={!clickable}
-                onClick={() => s.firstId && nav.onJump(s.firstId)}
+                onClick={() => (s.firstId ? nav.onJump(s.firstId) : nav.onGo?.(s))}
                 className={`flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-[12px] transition-colors ${
-                  clickable ? "text-foreground hover:bg-muted" : "cursor-default text-muted-foreground/60"
-                }`}
+                  clickable ? "hover:bg-muted" : "cursor-default"
+                } ${s.state === "none" ? "text-muted-foreground/60" : "text-foreground"}`}
               >
                 <span className={`w-3 shrink-0 text-center ${s.state === "done" ? "text-green-600 dark:text-green-500" : ""}`} aria-hidden>
                   {s.state === "done" ? "✓" : s.state === "progress" ? "●" : "○"}
@@ -65,6 +72,7 @@ function FormNavButtons({ nav }: { nav: FormNav }) {
               </button>
             );
           })}
+          </div>
         </PopoverContent>
       </Popover>
       <button
