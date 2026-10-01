@@ -30,6 +30,9 @@ export async function apiFetch(path: string, init: RequestInit = {}): Promise<Re
   if (BASE) {
     const body = typeof init.body === "string" ? init.body : "";
     headers.set("x-amz-content-sha256", await sha256Hex(body));
+    // The API answers only a caller that holds the site key, and the key ships
+    // only inside this bundle, which sits behind the site's password.
+    headers.set("x-site-key", import.meta.env.VITE_SITE_KEY ?? "");
   }
   return fetch(api(path), { ...init, headers });
 }

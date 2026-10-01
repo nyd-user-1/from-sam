@@ -1,9 +1,10 @@
 version: 1
-# livingston on Amplify Hosting (2026-09-29), from commit bc75167 — the forms
-# chat: the Official forms rail, cards dragged into the chat, the assistant's
-# questions as inputs in the transcript, progress per form, the filled PDF
-# and the offer to email it. The Vercel functions under api/ (the chat's
-# Bedrock call, the email) do not run here; those are wired in a later step.
+# from-sam on Amplify Hosting (2026-09-29): the forms chat as a static site,
+# password-protected at the edge. The functions under api/ run as the Lambda
+# `from-sam-api` behind CloudFront (ops/amplify/README.md); this file ships
+# that Lambda together with the site, so the two never drift, and nothing is
+# compiled on a laptop. The API answers only a caller holding VITE_SITE_KEY,
+# which exists only inside the password-protected bundle.
 frontend:
   phases:
     preBuild:
@@ -12,6 +13,12 @@ frontend:
     build:
       commands:
         - npm run build
+        - |
+          npx esbuild ops/amplify/api-lambda.mjs --bundle --platform=node --format=esm \
+            --target=node22 --main-fields=module,main --outfile=dist-lambda/index.mjs \
+            --banner:js="import { createRequire as __cr } from 'node:module'; const require = __cr(import.meta.url);"
+          (cd dist-lambda && zip -q ../function.zip index.mjs)
+          aws lambda update-function-code --function-name from-sam-api --zip-file fileb://function.zip --query LastModified --output text
   artifacts:
     baseDirectory: dist
     files:

@@ -32,7 +32,7 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream)
     ? {
         "access-control-allow-origin": origin,
         "access-control-allow-methods": "GET,POST,PATCH,DELETE,OPTIONS",
-        "access-control-allow-headers": "content-type, x-amz-content-sha256",
+        "access-control-allow-headers": "content-type, x-amz-content-sha256, x-site-key",
         "access-control-max-age": "600",
         vary: "origin",
       }
@@ -102,6 +102,14 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream)
   if (method === "OPTIONS") {
     res.status(204)
     return close()
+  }
+
+  // Only the password-protected site may call: its bundle carries the key.
+  // Without one configured the API stays shut rather than open.
+  const siteKey = process.env.SITE_KEY
+  if (!siteKey || event.headers?.["x-site-key"] !== siteKey) {
+    res.status(401).json({ error: "not allowed" })
+    return closing
   }
 
   const route = ROUTES[path]
