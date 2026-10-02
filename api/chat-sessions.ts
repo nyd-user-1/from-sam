@@ -5,7 +5,7 @@
 //   PATCH ?id= {title?, messages?}
 //   DELETE ?id=
 // No auth by ruling (display names only) — same posture the Supabase table had.
-import { neon } from "@neondatabase/serverless";
+import { neon } from "./_lib/aurora.js";
 
 export const config = { maxDuration: 15 };
 

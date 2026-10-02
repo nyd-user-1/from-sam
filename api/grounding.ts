@@ -16,7 +16,7 @@
 // The passages are looked up here by key_number rather than shipped from the
 // browser: the client never held the abstracts, and the round trip stays small.
 import { BedrockRuntimeClient, ApplyGuardrailCommand } from "@aws-sdk/client-bedrock-runtime";
-import { neon } from "@neondatabase/serverless";
+import { neon } from "./_lib/aurora.js";
 
 export const config = { maxDuration: 30 };
 

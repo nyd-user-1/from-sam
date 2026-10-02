@@ -32,7 +32,7 @@
 // Env: DATABASE_URL, BEDROCK_API_KEY (bearer), BEDROCK_REGION,
 //      SEMANTIC_SCHOLAR_API_KEY (optional).
 
-import { neon } from "@neondatabase/serverless";
+import { neon } from "./_lib/aurora.js";
 import { activeEncoder, embedQueryCached, hasEmbeddings, toVectorLiteral, vectorTable, type EncoderName } from "./_lib/embed.js";
 import { getFulltext, type FulltextResult } from "./_lib/fulltext.js";
 import {

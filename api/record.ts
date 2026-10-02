@@ -3,7 +3,7 @@
 //
 // key_number is the DOI suffix ('2026.07.31.741992', '001891'), which is digits and
 // dots only — so the caller's .toUpperCase() is a no-op and stays harmless.
-import { neon } from "@neondatabase/serverless";
+import { neon } from "./_lib/aurora.js";
 
 export const config = { maxDuration: 15 };
 

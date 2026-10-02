@@ -9,7 +9,7 @@
 // Sort is pub_year DESC, posted_date DESC, key_number DESC (idx_pp_year). Total
 // counts: unfiltered from pg_class.reltuples (exact enough for a pager, free),
 // filtered via the btree. Cached at the edge for an hour.
-import { neon } from "@neondatabase/serverless";
+import { neon } from "./_lib/aurora.js";
 
 export const config = { maxDuration: 15 };
 

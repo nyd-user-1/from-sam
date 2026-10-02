@@ -11,7 +11,7 @@
 // The NSR-era types (nuclides, reactions) map onto this corpus as categories and
 // journals per LANE-RXIV-MAP.md §4; the old names are accepted as aliases so a
 // stale client or a bookmarked URL keeps working.
-import { neon } from "@neondatabase/serverless";
+import { neon } from "./_lib/aurora.js";
 
 export const config = { maxDuration: 30 };
 

@@ -29,7 +29,7 @@
 // encoder actually answered**, because querying one model's space with another model's
 // vector returns confident nonsense with a 200.
 
-import { neon } from "@neondatabase/serverless";
+import { neon } from "./_lib/aurora.js";
 import {
   activeEncoder, embedQueryCached, hasEmbeddings, rrf, toVectorLiteral, vectorTable,
   type EncoderName,

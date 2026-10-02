@@ -8,7 +8,7 @@
 // instead: same columns, no schema change required (id and created_at have
 // defaults). Do not reintroduce the function call without shipping the DDL.
 // The Supabase realtime channel is replaced by the client polling this GET.
-import { neon } from "@neondatabase/serverless";
+import { neon } from "./_lib/aurora.js";
 
 export const config = { maxDuration: 15 };
 

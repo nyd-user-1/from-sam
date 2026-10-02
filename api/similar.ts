@@ -19,7 +19,7 @@
 // The probe vector is BOUND ($1::vector) rather than join-sourced: a join-sourced
 // probe defeats the HNSW index and turns this into a sequential scan over 433,449
 // rows. `SET LOCAL hnsw.ef_search` must ride in the same transaction as the probe.
-import { neon } from "@neondatabase/serverless";
+import { neon } from "./_lib/aurora.js";
 
 export const config = { maxDuration: 15 };
 

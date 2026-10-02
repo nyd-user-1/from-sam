@@ -10,7 +10,7 @@
 //
 // Version matters: v1 404s for a paper now at v3, and only the database knows the
 // current version, which is why this is an endpoint rather than a string built in the client.
-import { neon } from "@neondatabase/serverless";
+import { neon } from "./_lib/aurora.js";
 
 export const config = { maxDuration: 15 };
 
